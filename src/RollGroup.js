@@ -3,6 +3,7 @@ import ExplodeModifier from './modifiers/ExplodeModifier';
 import Modifier from './modifiers/Modifier';
 import ReRollModifier from './modifiers/ReRollModifier';
 import RequiredArgumentError from './exceptions/RequiredArgumentErrorError';
+import RollResults from './results/RollResults';
 
 const modifiersSymbol = Symbol('modifiers');
 const notationSymbol = Symbol('notation');
@@ -68,7 +69,7 @@ class RollGroup {
     // loop through each expression and add it to the list
     this[expressionsSymbol] = [];
     expressions.forEach((expression) => {
-      this.addExpression(expression);
+      this[expressionsSymbol].push(expression);
     });
   }
 
@@ -134,8 +135,20 @@ class RollGroup {
     return this[notationSymbol];
   }
 
-  addExpression(value) {
-    this[expressionsSymbol].push(value);
+  roll() {
+    // create a result object to hold the rolls
+    const rollResults = new RollResults();
+
+    // roll each of the internal expressions
+    console.log(this.expressions);
+    rollResults.rolls = this.expressions.map((expression) => expression.roll());
+
+    // loop through each modifier and carry out its actions
+    (this.modifiers || []).forEach((modifier) => {
+      modifier.run(rollResults, this);
+    });
+
+    return rollResults;
   }
 
   /**
